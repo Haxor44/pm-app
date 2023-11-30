@@ -2,10 +2,10 @@ class PaginationHandlerMixin(object):
     @property
     def paginator(self):
         if not hasattr(self, '_paginator'):
-            if self.pagination_class is None:
+            if self.PaginationHandlerMixin is None:
                 self._paginator = None
             else:
-                self._paginator = self.pagination_class()
+                self._paginator = self.PaginationHandlerMixin()
         else:
             pass
         return self._paginator    
