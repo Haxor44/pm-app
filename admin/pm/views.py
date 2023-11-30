@@ -2,17 +2,41 @@ from django.shortcuts import render
 from rest_framework import viewsets,status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.pagination import PageNumberPagination
+from rest_framework import filters
+from rest_framework.generics import GenericAPIView
+from .paginator import PaginationHandlerMixin
 # Create your views here.
 from .models import Pmforms, USer
 from .serializers import PmSerializer
 from .producer import publish
 import random
 
-class PmformsViewSet(viewsets.ViewSet):
+
+class BasicPagination(PageNumberPagination):
+    page_size_query_param = 'limit'
+
+
+        
+class PmformsViewSet(viewsets.ViewSet,APIView, PaginationHandlerMixin):
+    
     def list(self,request):
-        pm = Pmforms.objects.all()
-        serializer = PmSerializer(pm, many=True)
-        return Response(serializer.data)
+        instance =Pmforms.objects.all()
+        page = self.paginate_queryset(instance)
+        if page is not None:
+            serializer = self.get_paginated_response(self.serializer_class(page,many=True).data)
+        else:
+            serializer = self.serializer_class(instance, many=True)        
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+    def search(self,request, format=None):
+        record = Pmforms.objects.all()
+        name = request.query_params.get('name')
+        if name is not None:
+            record = record.filter(name=name)
+        serializer = PmSerializer(record,many=True)
+        return Response(serializer.data,status=status.HTTP_200_OK)
 
     def create(self,request):
         serializer = PmSerializer(data=request.data)

@@ -29,5 +29,8 @@ urlpatterns = [
         'put':'update',
         'delete':'destroy'
     })),
+    path('records/', PmformsViewSet.as_view({
+        'get':'search',
+    })),
     path('user',UserAPIView.as_view())
 ]
